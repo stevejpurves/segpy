@@ -6,6 +6,40 @@ from segpy.toolkit import (write_textual_reel_header, write_binary_reel_header,
                            write_extended_textual_headers)
 
 
+def write_segy_based_on(hf, segy_y_reader, data, endian='>'):
+  """
+  Purpose:
+    make it easy to write new (processed) data back to a new segy file based on the original
+    segy file
+
+  Args:
+    fh: A file-like object open for binary write.
+
+    segy_y_reader: a SegYReader instance from which the segy headers and other parameters can be retreived
+
+    data: a numpy array containing trace samples organised in (trace, inline, crossline order)
+
+  """
+
+  encoding = segy_y_reader.encoding
+
+  if not is_supported_encoding(encoding):
+      raise UnsupportedEncodingError("Writing SEG Y", encoding)
+
+  write_textual_reel_header(fh, segy_y_reader.textual_reel_header, encoding)
+  write_binary_reel_header(fh, segy_y_reader.binary_reel_header, endian)
+  write_extended_textual_headers(fh, segy_y_reader.extended_textual_header, encoding)
+
+  trace_header_packer = HeaderPacker(trace_header_format, endian)
+
+  il_xl = list(itertools.product(segy_y_reader.inline_range(), segy_y_reader.xline_range()))
+  x_y = list(itertools.product(range(0,segy_y_reader.num_inlines()), range(0,segy_y_reader.num_xlines())))
+  for ix,ij in zip(il_xl, x_y):
+      idx = reader.trace_index((ix[0],ix[1]))
+      write_trace_header(fh, segy_y_reader.trace_header(idx), trace_header_packer)
+      write_trace_samples(fh, data[:,ij[0],ij[1]], segy_y_reader.data_sample_format, endian=endian)
+
+
 
 def write_segy(fh,
                seg_y_data,
