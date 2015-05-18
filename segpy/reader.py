@@ -1,21 +1,9 @@
 from __future__ import print_function
 from segpy.encoding import ASCII
 
-from segpy.portability import seekable
 from segpy.util import file_length, filename_from_handle
-from segpy.datatypes import DATA_SAMPLE_FORMAT, CTYPE_DESCRIPTION, CTYPES, size_in_bytes
-from segpy.toolkit import (extract_revision,
-                           bytes_per_sample,
-                           read_binary_reel_header,
-                           read_trace_header,
-                           catalog_traces,
-                           read_binary_values,
-                           compile_trace_header_format,
-                           REEL_HEADER_NUM_BYTES,
-                           TRACE_HEADER_NUM_BYTES,
-                           read_textual_reel_header,
-                           read_extended_textual_headers,
-                           guess_textual_header_encoding)
+from segpy.datatypes import *
+from segpy.toolkit import *
 
 
 def create_reader(fh, encoding=None, endian='>', progress=None):
@@ -72,7 +60,7 @@ def create_reader(fh, encoding=None, endian='>', progress=None):
         raise TypeError(
             "SegYReader must be provided with a binary mode file object")
 
-    if not seekable(fh):
+    if not fh.seekable():
         raise TypeError(
             "SegYReader must be provided with a seekable file object")
 
@@ -420,8 +408,9 @@ class SegYReader3D(SegYReader):
             by the range is valid.
         """
         start = self._line_catalog.key_min()[0]
-        stop = self._line_catalog.key_max()[0] + 1
-        return range(start, stop)
+        stop = self._line_catalog.key_max()[0]
+        step = int((stop - start) / (self.num_inlines()-1))
+        return range(start, stop+1, step)
 
     def num_inlines(self):
         """The number of distinct inlines in the survey.
@@ -448,8 +437,9 @@ class SegYReader3D(SegYReader):
             by the range is valid.
         """
         start = self._line_catalog.key_min()[1]
-        stop = self._line_catalog.key_max()[1] + 1
-        return range(start, stop)
+        stop = self._line_catalog.key_max()[1]
+        step = int((stop - start) / (self.num_xlines()-1))
+        return range(start, stop+1, step)
 
     def num_xlines(self):
         """The number of distinct crosslines in the survey.
