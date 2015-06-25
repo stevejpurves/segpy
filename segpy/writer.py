@@ -29,7 +29,7 @@ def write_traces_from_data_block(fh,
     
     trace_length = data_block.shape[0]
     if segy_object.max_num_trace_samples() != trace_length:
-        raise ValueError("trace length of data block does not match the segy_object's")
+        raise ValueError("trace length of data block does not match the segy_object's", segy_object.max_num_trace_samples(), trace_length)
     
     num_traces = data_block.shape[1]        
     if data_block.ndim == 3:
