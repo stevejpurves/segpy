@@ -396,6 +396,17 @@ class SegYReader3D(SegYReader):
     def _dimensionality(self):
         return 3
 
+    def inline_range_info(self):
+        """A tuple describing the inline range and step.
+
+        Returns:
+            A tuple (start, stop, step)
+        """
+        start = self._line_catalog.key_min()[0]
+        stop = self._line_catalog.key_max()[0]
+        step = int((stop - start) / (self.num_inlines()-1))
+        return (start, stop, step)
+
     def inline_range(self):
         """A range encompassing inline numbers.
 
@@ -407,10 +418,8 @@ class SegYReader3D(SegYReader):
             this should not be taken as meaning that any intermediate inline number generated
             by the range is valid.
         """
-        start = self._line_catalog.key_min()[0]
-        stop = self._line_catalog.key_max()[0]
-        step = int((stop - start) / (self.num_inlines()-1))
-        return range(start, stop+1, step)
+        info = self.inline_range_info()
+        return range(info[0], info[1]+1, info[2])
 
     def num_inlines(self):
         """The number of distinct inlines in the survey.
@@ -425,6 +434,17 @@ class SegYReader3D(SegYReader):
                 self._num_inlines = len(set(i for i, j in self._line_catalog))
         return self._num_inlines
 
+    def xline_range_info(self):
+        """A tuple describing the crossline range and step.
+
+        Returns:
+            A tuple (start, stop, step)
+        """
+        start = self._line_catalog.key_min()[1]
+        stop = self._line_catalog.key_max()[1]
+        step = int((stop - start) / (self.num_xlines()-1))
+        return (start, stop, step)
+
     def xline_range(self):
         """A range encompassing crossline numbers.
 
@@ -436,10 +456,8 @@ class SegYReader3D(SegYReader):
             this should not be taken as meaning that any intermediate crossline number generated
             by the range is valid.
         """
-        start = self._line_catalog.key_min()[1]
-        stop = self._line_catalog.key_max()[1]
-        step = int((stop - start) / (self.num_xlines()-1))
-        return range(start, stop+1, step)
+        info = self.xline_range_info()
+        return range(info[0], info[1]+1, info[2])
 
     def num_xlines(self):
         """The number of distinct crosslines in the survey.
